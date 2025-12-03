@@ -34,3 +34,30 @@ jobs:
           IMAGE=${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
           docker tag fastapi-app:latest $IMAGE
           docker push $IMAGE
+
+  trivy-scan:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download built image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fastapi-app
+
+      - name: Load Docker image
+        run: docker load -i fastapi-app.tar
+
+      - name: Pull Trivy Docker image
+        run: docker pull aquasec/trivy:latest
+
+      - name: Run Trivy scan (vulnerability-only, HIGH/CRITICAL)
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy image \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --timeout 30m \
+            fastapi-app:latest \
+            --exit-code 1
