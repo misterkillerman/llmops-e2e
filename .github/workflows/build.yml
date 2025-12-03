@@ -14,7 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ---------- FREE DISK SPACE (CRITICAL) ----------
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet
@@ -24,7 +23,6 @@ jobs:
           docker system prune -af || true
           sudo apt-get clean
 
-      # ---------- PYTHON SETUP WITH CACHING ----------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -35,7 +33,6 @@ jobs:
         run: |
           pip install --no-cache-dir -r requirements.txt
 
-      # ---------- DOCKER BUILD (REDUCED SIZE) ----------
       - name: Build Docker image
         run: |
-          docker build --no-cache -t my-llmops-app:latest .
+          docker build --no-cache -t fastapi-app .
