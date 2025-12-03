@@ -7,60 +7,21 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Free disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          docker system prune -af || true
-          sudo apt-get clean
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: pip
 
       - name: Install dependencies
-        run: |
-          pip install --no-cache-dir -r requirements.txt
+        run: pip install --no-cache-dir -r requirements.txt
 
       - name: Build Docker image
-        run: |
-          docker build --no-cache -t fastapi-app .
-          
-      - name: Save Docker image as artifact
-        run: |
-          docker save fastapi-app:latest -o fastapi-app.tar
-        shell: bash
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: fastapi-app
-          path: fastapi-app.tar
-          
-  push:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Push only on main branch
-
-    steps:
-      - name: Download built image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: fastapi-app
-
-      - name: Load Docker image
-        run: docker load -i fastapi-app.tar
+        run: docker build -t fastapi-app:latest .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -68,12 +29,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Tag image
+      - name: Tag and push image
         run: |
           IMAGE=${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
           docker tag fastapi-app:latest $IMAGE
-
-      - name: Push image to Docker Hub
-        run: |
-          IMAGE=${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
           docker push $IMAGE
