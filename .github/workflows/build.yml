@@ -1,29 +1,41 @@
 name: CI & Docker Build
- 
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
- 
+
+      # ---------- FREE DISK SPACE (CRITICAL) ----------
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          docker system prune -af || true
+          sudo apt-get clean
+
+      # ---------- PYTHON SETUP WITH CACHING ----------
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
- 
+          cache: pip
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
- 
-      # optionally add lint/test steps here, if you add tests
- 
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      # ---------- DOCKER BUILD (REDUCED SIZE) ----------
       - name: Build Docker image
         run: |
-          docker build -t my-llmops-app:latest .
+          docker build --no-cache -t my-llmops-app:latest .
