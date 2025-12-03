@@ -36,3 +36,46 @@ jobs:
       - name: Build Docker image
         run: |
           docker build --no-cache -t fastapi-app .
+          
+      - name: Save Docker image as artifact
+        run: |
+          docker save fastapi-app:latest -o fastapi-app.tar
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastapi-app
+          path: fastapi-app.tar
+
+  push:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Push only on main branch
+
+    steps:
+      - name: Download built image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fastapi-app
+
+      - name: Load Docker image
+        run: |
+          docker load -i fastapi-app.tar
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/fastapi-app:latest
+          docker tag fastapi-app:latest $IMAGE
+
+      - name: Push image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/fastapi-app:latest
+          docker push $IMAGE
