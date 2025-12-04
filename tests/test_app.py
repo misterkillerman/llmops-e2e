@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://localhost:30080"  # mapped port from k3d
+BASE_URL = "http://localhost:30007"  # mapped port from k3d
 
 def test_chat():
     """Test whether the service returns a 200 OK."""
