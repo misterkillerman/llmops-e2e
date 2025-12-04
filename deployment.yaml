@@ -12,6 +12,18 @@ spec:
       labels:
         app: gpt-hf-pod
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - gpt-hf-pod
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: gptcontainer
         image: janicephua/fastapi-app:latest
