@@ -68,6 +68,13 @@ jobs:
         run: |
           kubectl rollout status deployment/gpt-huggingface --timeout=180s
 
+      - name: Print pod logs
+        run: |
+          kubectl get pods
+          POD=$(kubectl get pods -o name | head -n 1)
+          kubectl logs $POD --tail=50
+
+
       # Install Python for test stage
       - name: Install Python
         uses: actions/setup-python@v5
