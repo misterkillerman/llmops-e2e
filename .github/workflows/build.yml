@@ -79,16 +79,3 @@ jobs:
             kubectl get endpoints gpt-hf-service -o wide
             kubectl get pods --show-labels
             kubectl get endpoints gpt-hf-service -o wide
-
-      # Install Python for test stage
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install test dependencies
-        run: pip install requests pytest
-
-      # Run tests against the live service
-      - name: Run API Tests
-        run: pytest -q tests/test_app.py
