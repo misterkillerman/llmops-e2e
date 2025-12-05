@@ -47,7 +47,8 @@ jobs:
       # Create k3d Cluster with port mapping
       - name: Create k3d Cluster
         run: |
-          k3d cluster create ${{ env.CLUSTER_NAME }} --api-port 6550 -p "30007:30007@server:0" || echo "Cluster exists"
+          k3d cluster create ${{ env.CLUSTER_NAME }} --api-port 6550 -p "30000-32767:30000-32767@loadbalancer" || echo "Cluster exists"
+
 
       # Load DockerHub image into k3d (pulls from registry)
       - name: Pull image inside k3d nodes
