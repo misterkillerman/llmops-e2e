@@ -61,7 +61,6 @@ jobs:
         run: |
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
-          kubectl get svc
 
       # Wait for deployment to be ready
       - name: Wait for rollout
@@ -74,6 +73,13 @@ jobs:
           POD=$(kubectl get pods -o name | head -n 1)
           kubectl logs $POD --tail=50
 
+      - name: Debug service endpoints
+        run: |
+            kubectl get svc
+            kubectl get svc gpt-hf-service -o wide
+            kubectl get endpoints gpt-hf-service -o wide
+            kubectl get pods --show-labels
+            kubectl get endpoints gpt-hf-service -o wide
 
       # Install Python for test stage
       - name: Install Python
